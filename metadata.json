@@ -1,0 +1,7 @@
+{
+  "name": "Nexiro - AI Studio",
+  "description": "Professional AI photography enhancement tool for entrepreneurs. Upload your product or dish and a reference style to generate world-class imagery using Google Gemini 3 Pro.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
