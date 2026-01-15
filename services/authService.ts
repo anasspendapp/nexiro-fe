@@ -1,10 +1,6 @@
 import { User, PlanType } from "../types";
 
-// Production: Use relative URL (so it works on nexiro.io/api)
-// Local: Use full localhost URL
-export const API_URL = import.meta.env.PROD
-  ? "/api"
-  : "https://nexiro-be-legacy.onrender.com/api";
+export const API_URL = "https://nexiro-be-legacy.onrender.com/api";
 
 /**
  * HELPER: Mock Database implementation for the frontend preview.
