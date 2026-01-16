@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-import MaintenancePage from "./components/MaintenancePage";
+import MainteancePage from "./components/MaintenancePage";
 import App from "./App";
 
 const rootElement = document.getElementById("root");
@@ -23,7 +23,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      {enableApp ? <App /> : <MaintenancePage />}
+      <App />
     </GoogleOAuthProvider>
   </React.StrictMode>,
 );
