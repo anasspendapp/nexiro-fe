@@ -1,6 +1,6 @@
 import { User, PlanType } from "../types";
 
-export const API_URL = "https://nexiro-be-legacy.onrender.com/api";
+export const API_URL = "https://api.nexiro.io/api";
 
 /**
  * HELPER: Mock Database implementation for the frontend preview.
