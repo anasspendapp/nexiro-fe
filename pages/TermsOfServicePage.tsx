@@ -8,7 +8,7 @@ const TermsOfServicePage: React.FC = () => {
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex flex-col">
       <BackgroundBlobs />
 
-      <Header showAuth={true} showNavLinks={true} />
+      <Header />
 
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">

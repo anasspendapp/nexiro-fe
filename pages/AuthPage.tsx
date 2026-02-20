@@ -9,14 +9,6 @@ const AuthPage: React.FC = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleAuthSuccess = async (user: any) => {
-    if (!user.isPro) {
-      navigate("/pricing");
-    } else {
-      navigate("/dashboard");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center p-6">
       <BackgroundBlobs />
@@ -60,7 +52,16 @@ const AuthPage: React.FC = () => {
                   const user = await authService.googleLogin(
                     credentialResponse.credential,
                   );
-                  await handleAuthSuccess(user);
+                  console.log("Google login successful");
+                  // Use window.location to force a full page reload
+                  // This ensures App.tsx reinitializes with the new user from localStorage
+
+                  if (user.credits === 0) {
+                    window.location.href = "/pricing";
+
+                    return;
+                  }
+                  window.location.href = "/dashboard";
                 } catch (err: any) {
                   console.error(err);
                   setError(err.message || "Google Login Failed");

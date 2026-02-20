@@ -5,12 +5,13 @@ export interface ImageAsset {
 }
 
 export enum PlanType {
-  FREE = 'FREE',
-  STARTER = 'STARTER',
-  PRO = 'PRO'
+  FREE = "FREE",
+  STARTER = "STARTER",
+  PRO = "PRO",
 }
 
 export interface User {
+  id?: number;
   email: string;
   credits: number;
   plan: PlanType;
@@ -19,38 +20,38 @@ export interface User {
 }
 
 export enum AppState {
-  IDLE = 'IDLE',
-  GENERATING = 'GENERATING',
-  ANALYZING = 'ANALYZING',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR'
+  IDLE = "IDLE",
+  GENERATING = "GENERATING",
+  ANALYZING = "ANALYZING",
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR",
 }
 
-export type ToolType = 'FOOD' | 'PRODUCT';
+export type ToolType = "FOOD" | "PRODUCT";
 
 export enum BackgroundMode {
-  REFERENCE_STYLE = 'REFERENCE_STYLE',
-  KEEP_ORIGINAL = 'KEEP_ORIGINAL',
-  TRANSPARENT = 'TRANSPARENT',
-  CUSTOM = 'CUSTOM',
-  COLOR = 'COLOR'
+  REFERENCE_STYLE = "REFERENCE_STYLE",
+  KEEP_ORIGINAL = "KEEP_ORIGINAL",
+  TRANSPARENT = "TRANSPARENT",
+  CUSTOM = "CUSTOM",
+  COLOR = "COLOR",
 }
 
 export enum CameraAngle {
-  TOP_DOWN = 'TOP_DOWN',
-  FORTY_FIVE = 'FORTY_FIVE',
-  EYE_LEVEL = 'EYE_LEVEL',
-  MACRO = 'MACRO'
+  TOP_DOWN = "TOP_DOWN",
+  FORTY_FIVE = "FORTY_FIVE",
+  EYE_LEVEL = "EYE_LEVEL",
+  MACRO = "MACRO",
 }
 
 export enum UsageScenario {
-  ECOMMERCE_MENU = 'ECOMMERCE_MENU', // Used for Catalog/Menu
-  SOCIAL_LIFESTYLE = 'SOCIAL_LIFESTYLE',
-  WEBSITE_HERO = 'WEBSITE_HERO'
+  ECOMMERCE_MENU = "ECOMMERCE_MENU", // Used for Catalog/Menu
+  SOCIAL_LIFESTYLE = "SOCIAL_LIFESTYLE",
+  WEBSITE_HERO = "WEBSITE_HERO",
 }
 
-export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
-export type ImageQuality = '1K' | '2K' | '4K';
+export type AspectRatio = "1:1" | "3:4" | "4:3" | "9:16" | "16:9";
+export type ImageQuality = "1K" | "2K" | "4K";
 
 export interface GenerationSettings {
   aspectRatio: AspectRatio;
@@ -58,4 +59,22 @@ export interface GenerationSettings {
   backgroundMode: BackgroundMode;
   cameraAngle: CameraAngle;
   usageScenario: UsageScenario;
+}
+
+export interface Plan {
+  id: number;
+  name: string;
+  price: string;
+  credits: number;
+  description: string | null;
+  isActive: boolean;
+  priceBookId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PricingResponse {
+  plans: Plan[];
+  creditsPerEnhancement: number;
+  versionTag: string;
 }

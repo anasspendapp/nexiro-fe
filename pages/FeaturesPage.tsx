@@ -68,7 +68,7 @@ const FeaturesPage: React.FC = () => {
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex flex-col">
       <BackgroundBlobs />
 
-      <Header showAuth={true} showNavLinks={true} />
+      <Header />
 
       {/* Hero Section */}
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 pt-20 pb-12">

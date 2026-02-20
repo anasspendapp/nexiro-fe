@@ -20,6 +20,9 @@ export const useLogin = () => {
     onSuccess: (data) => {
       const user = transformUserData(data.user);
       localStorage.setItem("nexiro_user", JSON.stringify(user));
+      if (data.token) {
+        localStorage.setItem("nexiro_token", data.token);
+      }
     },
   });
 };
@@ -38,13 +41,16 @@ export const useGoogleAuth = () => {
     onSuccess: (data) => {
       const user = transformUserData(data.user);
       localStorage.setItem("nexiro_user", JSON.stringify(user));
+      if (data.token) {
+        localStorage.setItem("nexiro_token", data.token);
+      }
     },
   });
 };
 
 export const useGetCurrentUser = () => {
   return useMutation({
-    mutationFn: (email: string) => authAPI.getCurrentUser(email),
+    mutationFn: () => authAPI.getCurrentUser(),
     onSuccess: (data) => {
       const user = transformUserData(data.user);
       localStorage.setItem("nexiro_user", JSON.stringify(user));
@@ -83,48 +89,20 @@ export const useUserCredits = (userId: string, options?: UseQueryOptions) => {
 };
 
 // ============================================
-// Subscription Hooks
-// ============================================
-
-export const useCreateCheckoutSession = () => {
-  return useMutation({
-    mutationFn: (data: {
-      priceId: string;
-      email: string;
-      successUrl: string;
-      cancelUrl: string;
-    }) => subscriptionAPI.createCheckoutSession(data),
-  });
-};
-
-export const useUpgradePlan = () => {
-  return useMutation({
-    mutationFn: (email: string) => subscriptionAPI.upgradePlan(email),
-  });
-};
-
-export const useCancelSubscription = () => {
-  return useMutation({
-    mutationFn: (email: string) => subscriptionAPI.cancelSubscription(email),
-  });
-};
-
-// ============================================
 // Usage Hooks
 // ============================================
 
 export const useConsumeCredits = () => {
   return useMutation({
-    mutationFn: ({ email, amount }: { email: string; amount: number }) =>
-      usageAPI.consumeCredits(email, amount),
+    mutationFn: (amount: number) => usageAPI.consumeCredits(amount),
   });
 };
 
-export const useUsageHistory = (email: string, options?: UseQueryOptions) => {
+export const useUsageHistory = (userId: number, options?: UseQueryOptions) => {
   return useQuery({
-    queryKey: ["usage-history", email],
-    queryFn: () => usageAPI.getHistory(email),
-    enabled: !!email,
+    queryKey: ["usage-history", userId],
+    queryFn: () => usageAPI.getHistory(userId),
+    enabled: !!userId,
     ...options,
   });
 };
@@ -139,27 +117,11 @@ export const useUploadImage = () => {
   });
 };
 
-export const useJobStatus = (jobId: string, options?: UseQueryOptions) => {
+export const useImageHistory = (userId: number, options?: UseQueryOptions) => {
   return useQuery({
-    queryKey: ["job", jobId],
-    queryFn: () => imageAPI.getJobStatus(jobId),
-    enabled: !!jobId,
-    refetchInterval: (data) => {
-      // Stop refetching if job is completed or failed
-      if (data?.status === "completed" || data?.status === "failed") {
-        return false;
-      }
-      return 2000; // Poll every 2 seconds
-    },
-    ...options,
-  });
-};
-
-export const useImageHistory = (email: string, options?: UseQueryOptions) => {
-  return useQuery({
-    queryKey: ["image-history", email],
-    queryFn: () => imageAPI.getImageHistory(email),
-    enabled: !!email,
+    queryKey: ["image-history", userId],
+    queryFn: () => imageAPI.getImageHistory(userId),
+    enabled: !!userId,
     ...options,
   });
 };

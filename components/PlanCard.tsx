@@ -33,20 +33,13 @@ const PlanCard: React.FC<PlanCardProps> = ({
       selected
         ? "bg-indigo-900/20 border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.02] cursor-pointer"
         : currentMode
-        ? "bg-white/5 border-white/20"
-        : "bg-white/5 border-white/10 hover:border-white/20"
+          ? "bg-white/5 border-white/20"
+          : "bg-white/5 border-white/10 hover:border-white/20"
     }`}
   >
     {bestValue && (
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
         Best Value
-      </div>
-    )}
-    {currentMode && (
-      <div className="absolute top-4 right-4">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30">
-          CURRENT PLAN
-        </span>
       </div>
     )}
 
@@ -86,7 +79,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
     <div className="mb-6 p-3 bg-black/30 rounded-lg border border-white/5 text-center">
       <span className="text-xl font-bold text-indigo-300">{credits}</span>
       <span className="text-xs text-gray-400 block uppercase tracking-wide mt-1">
-        Monthly Credits
+        Credits
       </span>
     </div>
 

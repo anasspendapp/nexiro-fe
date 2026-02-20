@@ -107,10 +107,6 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
     onError("");
 
     try {
-      // 1. Deduct credits (optimistic or actual)
-      const updatedUser = await authService.consumeCredits(user.email, cost);
-      onUpdateUser(updatedUser);
-
       // 2. Prepare options
       const styleInput: StyleInput = referenceImage
         ? { type: "IMAGE", data: referenceImage.base64 }

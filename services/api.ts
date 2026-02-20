@@ -1,9 +1,11 @@
 import axios from "axios";
 import { User, PlanType } from "../types";
+import { authService } from "./authService";
 
 // API Configuration
-export const API_BASE_URL = "http://localhost:3001/api";
-// export const API_BASE_URL = "https://api.nexiro.io/api";
+// export const API_BASE_URL = "http://localhost:3001/api";
+// export const API_BASE_URL = "https://nexiro-be.onrender.com/api";
+export const API_BASE_URL = "https://api.nexiro.io/api";
 
 // Create axios instance with default config
 export const apiClient = axios.create({
@@ -11,17 +13,24 @@ export const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 30000, // 30 seconds
+  timeout: 60000, // 30 seconds
 });
 
-// Request interceptor for adding auth tokens if needed
+// Request interceptor for adding auth tokens
 apiClient.interceptors.request.use(
   (config) => {
-    // You can add auth tokens here if needed
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Import authService dynamically to avoid circular dependency
+    const token = authService.getToken();
+
+    // Add token to all requests except public endpoints
+    const publicEndpoints = ["/price-books/current/plans"];
+    const isPublicEndpoint = publicEndpoints.some((endpoint) =>
+      config.url?.includes(endpoint),
+    );
+
+    if (token && !isPublicEndpoint) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -33,6 +42,19 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 Unauthorized errors
+    if (error.response?.status === 401) {
+      // Import authService dynamically to avoid circular dependency
+
+      // Clear session and redirect to auth page
+      authService.clearSession();
+
+      // Only redirect if not already on auth page
+      if (window.location.pathname !== "/auth") {
+        window.location.href = "/auth";
+      }
+    }
+
     if (error.response) {
       // Server responded with error status
       console.error("API Error:", error.response.data);
@@ -82,8 +104,16 @@ export const authAPI = {
   /**
    * Get current user profile (after login/payment)
    */
-  getCurrentUser: async (email: string) => {
-    const response = await apiClient.post("/users/me", { email });
+  getCurrentUser: async () => {
+    const response = await apiClient.post("/users/me");
+    return response.data;
+  },
+
+  /**
+   * Get user by ID (JWT auth)
+   */
+  getUserById: async (userId: number) => {
+    const response = await apiClient.get(`/api/users/${userId}`);
     return response.data;
   },
 };
@@ -127,28 +157,23 @@ export const subscriptionAPI = {
    * Create Stripe checkout session
    */
   createCheckoutSession: async (data: {
-    priceId: string;
+    planId: string;
     email: string;
     successUrl: string;
     cancelUrl: string;
   }) => {
-    const response = await apiClient.post("/create-checkout-session", data);
-    return response.data;
-  },
-
-  /**
-   * Upgrade user plan to PRO
-   */
-  upgradePlan: async (email: string) => {
-    const response = await apiClient.post("/upgrade", { email });
+    const response = await apiClient.post(
+      "/stripe/create-checkout-session",
+      data,
+    );
     return response.data;
   },
 
   /**
    * Cancel subscription
    */
-  cancelSubscription: async (email: string) => {
-    const response = await apiClient.post("/cancel-subscription", { email });
+  cancelSubscription: async () => {
+    const response = await apiClient.post("/cancel-subscription");
     return response.data;
   },
 };
@@ -161,16 +186,16 @@ export const usageAPI = {
   /**
    * Consume credits for image processing
    */
-  consumeCredits: async (email: string, amount: number) => {
-    const response = await apiClient.post("/usage", { email, amount });
+  consumeCredits: async (amount: number) => {
+    const response = await apiClient.post("/usage", { amount });
     return response.data;
   },
 
   /**
    * Get usage history
    */
-  getHistory: async (email: string) => {
-    const response = await apiClient.get(`/usage/history/${email}`);
+  getHistory: async (userId: number) => {
+    const response = await apiClient.get(`/usage/history/${userId}`);
     return response.data;
   },
 };
@@ -203,8 +228,22 @@ export const imageAPI = {
   /**
    * Get image processing history
    */
-  getImageHistory: async (email: string) => {
-    const response = await apiClient.get(`/images/history/${email}`);
+  getImageHistory: async (userId: number) => {
+    const response = await apiClient.get(`/images/history/${userId}`);
+    return response.data;
+  },
+};
+
+// ============================================
+// Pricing APIs
+// ============================================
+
+export const pricingAPI = {
+  /**
+   * Get current pricing plans
+   */
+  getCurrentPlans: async () => {
+    const response = await apiClient.get("/price-books/current/plans");
     return response.data;
   },
 };
@@ -234,6 +273,7 @@ export const transformUserData = (backendUser: any): User => {
     : 0;
 
   const transformedUser = {
+    id: backendUser.id,
     email: backendUser.email,
     credits: credits,
     plan: userPlan,

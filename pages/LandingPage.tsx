@@ -11,7 +11,7 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen relative overflow-hidden bg-black text-white flex flex-col">
       <BackgroundBlobs />
 
-      <Header showAuth={true} showNavLinks={true} />
+      <Header />
 
       {/* Hero */}
       <main className="relative z-10 flex-grow flex flex-col items-center justify-center text-center px-6">

@@ -29,11 +29,11 @@ const App: React.FC = () => {
   // Fetch fresh user data from backend on mount
   useEffect(() => {
     const fetchUserData = async () => {
-      const sessionUser = authService.getSession();
-      if (sessionUser?.email) {
+      const token = authService.getToken();
+      if (token) {
         try {
-          // Fetch fresh user data from backend
-          const freshUser = await authService.getCurrentUser(sessionUser.email);
+          // Fetch fresh user data from backend using JWT token
+          const freshUser = await authService.getCurrentUser();
           // Update state and localStorage with fresh data
           setUser(freshUser);
           authService.saveSession(freshUser);
@@ -43,6 +43,10 @@ const App: React.FC = () => {
           authService.clearSession();
           setUser(null);
         }
+      } else {
+        // No token, clear any stale session data
+        authService.clearSession();
+        setUser(null);
       }
       setIsLoading(false);
     };
@@ -56,12 +60,12 @@ const App: React.FC = () => {
     if (query.get("session_id")) {
       window.history.replaceState({}, "", "/");
 
-      if (user?.email) {
+      if (user) {
         alert("Payment successful! Verifying your plan...");
 
         setTimeout(async () => {
           try {
-            const updatedUser = await authService.getCurrentUser(user.email);
+            const updatedUser = await authService.getCurrentUser();
             setUser(updatedUser);
             alert("Plan upgraded successfully!");
           } catch (e) {
@@ -103,7 +107,7 @@ const App: React.FC = () => {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
         <Route
-          path="/dashboard"
+          path="/dashboard/*"
           element={
             <ProtectedRoute user={user}>
               <Dashboard user={user!} onUpdateUser={setUser} />

@@ -13,10 +13,26 @@ export const API_URL = "https://api.nexiro.io/api";
  * Auth Service
  */
 export const authService = {
+  // Token Management
+  saveToken(token: string) {
+    localStorage.setItem("nexiro_token", token);
+  },
+
+  getToken(): string | null {
+    return localStorage.getItem("nexiro_token");
+  },
+
+  clearToken() {
+    localStorage.removeItem("nexiro_token");
+  },
+
   // Session Persistence
-  saveSession(user: User) {
+  saveSession(user: User, token?: string) {
     console.log("Saving user to localStorage:", user);
     localStorage.setItem("nexiro_user", JSON.stringify(user));
+    if (token) {
+      this.saveToken(token);
+    }
   },
 
   getSession(): User | null {
@@ -28,6 +44,7 @@ export const authService = {
 
   clearSession() {
     localStorage.removeItem("nexiro_user");
+    this.clearToken();
   },
 
   /**
@@ -36,7 +53,7 @@ export const authService = {
   async login(email: string, password: string): Promise<User> {
     const data = await authAPI.login(email, password);
     const user = transformUserData(data.user);
-    this.saveSession(user);
+    this.saveSession(user, data.token);
     return user;
   },
 
@@ -46,7 +63,7 @@ export const authService = {
   async googleLogin(token: string, plan?: PlanType): Promise<User> {
     const data = await authAPI.googleAuth(token, plan);
     const user = transformUserData(data.user);
-    this.saveSession(user);
+    this.saveSession(user, data.token);
     return user;
   },
 
@@ -56,16 +73,26 @@ export const authService = {
   async signup(email: string, password: string): Promise<User> {
     const data = await authAPI.signup(email, password);
     const user = transformUserData(data.user);
-    this.saveSession(user);
+    this.saveSession(user, data.token);
     return user;
   },
 
   /**
    * Get current user from backend
    */
-  async getCurrentUser(email: string): Promise<User> {
-    const data = await authAPI.getCurrentUser(email);
+  async getCurrentUser(): Promise<User> {
+    const data = await authAPI.getCurrentUser();
     const user = transformUserData(data.user);
+    this.saveSession(user);
+    return user;
+  },
+
+  /**
+   * Get user by ID (using JWT authentication)
+   */
+  async getUserById(userId: number): Promise<User> {
+    const data = await authAPI.getUserById(userId);
+    const user = transformUserData(data.user || data);
     this.saveSession(user);
     return user;
   },
@@ -73,8 +100,8 @@ export const authService = {
   /**
    * Consume credits for image processing
    */
-  async consumeCredits(email: string, amount: number): Promise<User> {
-    const data = await usageAPI.consumeCredits(email, amount);
+  async consumeCredits(amount: number): Promise<User> {
+    const data = await usageAPI.consumeCredits(amount);
     // Backend should return updated user with new creditBalance
     const user = transformUserData(data.user || data);
     this.saveSession(user);
@@ -82,20 +109,10 @@ export const authService = {
   },
 
   /**
-   * Upgrade user plan
-   */
-  async upgradePlan(email: string): Promise<User> {
-    const data = await subscriptionAPI.upgradePlan(email);
-    const user = transformUserData(data.user);
-    this.saveSession(user);
-    return user;
-  },
-
-  /**
    * Cancel subscription
    */
-  async cancelSubscription(email: string): Promise<User> {
-    const data = await subscriptionAPI.cancelSubscription(email);
+  async cancelSubscription(): Promise<User> {
+    const data = await subscriptionAPI.cancelSubscription();
     const user = transformUserData(data.user);
     this.saveSession(user);
     return user;

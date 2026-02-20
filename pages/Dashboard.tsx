@@ -1,8 +1,15 @@
 import React, { useState } from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { User, PlanType } from "../types";
 import { authService } from "../services/authService";
 import BackgroundBlobs from "../components/BackgroundBlobs";
-import DashboardHeader from "../components/DashboardHeader";
+import Header from "../components/Header";
 import ServicesMenu from "../components/ServicesMenu";
 import UpgradeModal from "../components/UpgradeModal";
 import Footer from "../components/Footer";
@@ -15,25 +22,12 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onUpdateUser }) => {
-  const [currentView, setCurrentView] = useState<
-    "menu" | "food" | "product" | "settings"
-  >("menu");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [isUpgrading, setIsUpgrading] = useState(false);
   const [toolError, setToolError] = useState<string>("");
-
-  const handleUpgrade = async (plan: PlanType) => {
-    setIsUpgrading(true);
-    try {
-      const updatedUser = await authService.upgradePlan(user.email, plan);
-      onUpdateUser(updatedUser);
-      setShowUpgradeModal(false);
-    } catch (e) {
-      alert("Upgrade failed. Please try again.");
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isMenuRoute = location.pathname === "/dashboard";
+  const isProductRoute = location.pathname === "/dashboard/product";
 
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-black text-gray-200 selection:bg-indigo-500 selection:text-white flex flex-col">
@@ -42,44 +36,58 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUpdateUser }) => {
       {showUpgradeModal && (
         <UpgradeModal
           onClose={() => setShowUpgradeModal(false)}
-          onUpgrade={handleUpgrade}
-          isProcessing={isUpgrading}
+          isProcessing={false}
         />
       )}
 
-      <DashboardHeader
-        user={user}
-        onSettings={() => setCurrentView("settings")}
-        showBack={currentView !== "menu"}
-        onBack={() => setCurrentView("menu")}
-      />
+      <Header />
 
       <main className="flex-grow w-full relative z-10 flex flex-col items-center">
-        {currentView === "menu" && (
-          <ServicesMenu
-            onSelect={(service) => {
-              if (service === "food" || service === "product")
-                setCurrentView(service as any);
-            }}
+        <Routes>
+          <Route
+            index
+            element={
+              <ServicesMenu
+                onSelect={(service) => navigate(`/dashboard/${service}`)}
+              />
+            }
           />
-        )}
-
-        {currentView === "settings" && (
-          <SettingsPage user={user} onUpdateUser={onUpdateUser} />
-        )}
-
-        {(currentView === "food" || currentView === "product") && (
-          <div className="max-w-[1600px] mx-auto px-6 py-4 w-full flex-grow flex flex-col">
-            <EnhanceTool
-              user={user}
-              onUpdateUser={onUpdateUser}
-              onError={setToolError}
-              errorMsg={toolError}
-              onUpgradeRequired={() => setShowUpgradeModal(true)}
-              toolType={currentView === "food" ? "FOOD" : "PRODUCT"}
-            />
-          </div>
-        )}
+          <Route
+            path="settings"
+            element={<SettingsPage user={user} onUpdateUser={onUpdateUser} />}
+          />
+          <Route
+            path="food"
+            element={
+              <div className="max-w-[1600px] mx-auto px-6 py-4 w-full flex-grow flex flex-col">
+                <EnhanceTool
+                  user={user}
+                  onUpdateUser={onUpdateUser}
+                  onError={setToolError}
+                  errorMsg={toolError}
+                  onUpgradeRequired={() => setShowUpgradeModal(true)}
+                  toolType="FOOD"
+                />
+              </div>
+            }
+          />
+          <Route
+            path="product"
+            element={
+              <div className="max-w-[1600px] mx-auto px-6 py-4 w-full flex-grow flex flex-col">
+                <EnhanceTool
+                  user={user}
+                  onUpdateUser={onUpdateUser}
+                  onError={setToolError}
+                  errorMsg={toolError}
+                  onUpgradeRequired={() => setShowUpgradeModal(true)}
+                  toolType="PRODUCT"
+                />
+              </div>
+            }
+          />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </main>
 
       <Footer />
@@ -87,7 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUpdateUser }) => {
       {/* Gradient Bottom Strip */}
       <div
         className={`w-full h-1 bg-gradient-to-r opacity-50 ${
-          currentView === "product"
+          isProductRoute
             ? "from-pink-500 via-purple-500 to-indigo-500"
             : "from-indigo-500 via-purple-500 to-pink-500"
         }`}
