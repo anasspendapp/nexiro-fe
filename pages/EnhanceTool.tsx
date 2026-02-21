@@ -15,6 +15,7 @@ import {
   analyzeImage,
   StyleInput,
   EnhancementOptions,
+  getEnhancementCredits,
 } from "../services/geminiService";
 import ImageUploader from "../components/ImageUploader";
 
@@ -52,7 +53,7 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
 
   // Settings State
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
-  const [quality, setQuality] = useState<ImageQuality>("1K");
+  const [quality, setQuality] = useState<ImageQuality>(ImageQuality.HD);
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>(
     BackgroundMode.REFERENCE_STYLE,
   );
@@ -93,11 +94,23 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
     }
   };
 
+  const calculateCredits = (): number => {
+    const styleInput: StyleInput = referenceImage
+      ? { type: "IMAGE", data: referenceImage.base64 }
+      : {
+          type: "TEXT",
+          description:
+            stylePrompt ||
+            "Professional studio lighting, high end commercial photography",
+        };
+    return getEnhancementCredits(styleInput, quality);
+  };
+
   const handleGenerate = async () => {
     if (!sourceImage) return;
 
     // Check credits
-    const cost = referenceImage ? 4 : 1;
+    const cost = calculateCredits();
     if (user.credits < cost) {
       onUpgradeRequired();
       return;
@@ -297,9 +310,10 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
                 onChange={(e) => setQuality(e.target.value as ImageQuality)}
                 className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-white outline-none focus:border-indigo-500"
               >
-                <option value="1K">1K (Fast)</option>
-                <option value="2K">2K (Balanced)</option>
-                <option value="4K">4K (High Res)</option>
+                <option value={ImageQuality.HD}>1K (Fast)</option>
+                <option value={ImageQuality.FHD}>2K (Balanced)</option>
+                <option value={ImageQuality.UHD_4K}>4K (High Res)</option>
+                <option value={ImageQuality.UHD_8K}>8K (Ultra HD)</option>
               </select>
             </div>
           </div>
@@ -443,7 +457,10 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
             <>
               Generate{" "}
               <span className="text-xs bg-black/20 px-2 py-0.5 rounded-full">
-                {referenceImage ? "4 Credits" : "1 Credit"}
+                {(() => {
+                  const credits = calculateCredits();
+                  return `${credits} Credit${credits !== 1 ? "s" : ""}`;
+                })()}
               </span>
             </>
           )}

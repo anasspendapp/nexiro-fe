@@ -51,7 +51,13 @@ export enum UsageScenario {
 }
 
 export type AspectRatio = "1:1" | "3:4" | "4:3" | "9:16" | "16:9";
-export type ImageQuality = "1K" | "2K" | "4K";
+
+export enum ImageQuality {
+  HD = "1K",
+  FHD = "2K",
+  UHD_4K = "4K",
+  UHD_8K = "8K",
+}
 
 export interface GenerationSettings {
   aspectRatio: AspectRatio;
