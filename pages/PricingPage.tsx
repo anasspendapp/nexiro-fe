@@ -7,9 +7,11 @@ import PlanCard from "../components/PlanCard";
 import BackgroundBlobs from "../components/BackgroundBlobs";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useAlert } from "../components/AlertProvider";
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { alert: showAlert } = useAlert();
   const user = authService.getSession();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,11 @@ const PricingPage: React.FC = () => {
     }
     console.log("Initiating Checkout for Plan:", planId);
     if (!planId) {
-      alert("Error: Plan ID is missing. Please refresh and try again.");
+      await showAlert({
+        title: "Missing plan",
+        message: "Plan ID is missing. Please refresh and try again.",
+        variant: "error",
+      });
       return;
     }
     try {
@@ -53,11 +59,19 @@ const PricingPage: React.FC = () => {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.message || "Failed to start checkout");
+        await showAlert({
+          title: "Checkout failed",
+          message: data.message || "Failed to start checkout",
+          variant: "error",
+        });
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("Checkout failed");
+      await showAlert({
+        title: "Checkout failed",
+        message: "Checkout failed",
+        variant: "error",
+      });
     }
   };
 

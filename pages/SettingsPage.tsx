@@ -3,6 +3,7 @@ import { User, PlanType, Plan } from "../types";
 import { authService } from "../services/authService";
 import { pricingAPI, subscriptionAPI } from "../services/api";
 import PlanCard from "../components/PlanCard";
+import { useAlert } from "../components/AlertProvider";
 
 interface SettingsPageProps {
   user: User;
@@ -10,6 +11,7 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
+  const { alert: showAlert, confirm } = useAlert();
   const [loading, setLoading] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [planLoading, setPlanLoading] = useState(true);
@@ -38,7 +40,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
   }, []);
 
   const handleBuyCredits = async (plan: any) => {
-    if (!confirm(`Buy ${plan.credits} credits for $${plan.price}?`)) return;
+    const approved = await confirm({
+      title: "Confirm purchase",
+      message: `Buy ${plan.credits} credits for $${plan.price}?`,
+      confirmLabel: "Continue",
+      cancelLabel: "Cancel",
+      variant: "warning",
+    });
+    if (!approved) return;
     setLoading(true);
     try {
       const data = await subscriptionAPI.createCheckoutSession({
@@ -50,7 +59,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.message || "Failed to start checkout");
+        await showAlert({
+          title: "Checkout failed",
+          message: data.message || "Failed to start checkout",
+          variant: "error",
+        });
       }
       setMsg({ type: "success", text: `Processing your credit purchase...` });
     } catch (err) {

@@ -4,6 +4,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { QueryProvider } from "./providers/QueryProvider";
 
 import MainteancePage from "./components/MaintenancePage";
+import { AlertProvider } from "./components/AlertProvider";
 import App from "./App";
 
 const rootElement = document.getElementById("root");
@@ -25,7 +26,9 @@ root.render(
   <React.StrictMode>
     <QueryProvider>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <App />
+        <AlertProvider>
+          <App />
+        </AlertProvider>
       </GoogleOAuthProvider>
     </QueryProvider>
   </React.StrictMode>,

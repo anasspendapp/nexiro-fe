@@ -3,6 +3,7 @@ import { Plan } from "../types";
 import { pricingAPI, subscriptionAPI } from "../services/api";
 import { authService } from "../services/authService";
 import PlanCard from "./PlanCard";
+import { useAlert } from "./AlertProvider";
 
 interface UpgradeModalProps {
   onClose: () => void;
@@ -13,6 +14,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
   onClose,
   isProcessing,
 }) => {
+  const { alert: showAlert, confirm } = useAlert();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +40,21 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   const handleBuyCredits = async (plan: Plan) => {
     if (!user) {
-      alert("Please log in to purchase credits");
+      await showAlert({
+        title: "Sign in required",
+        message: "Please log in to purchase credits.",
+        variant: "warning",
+      });
       return;
     }
-    if (!confirm(`Buy ${plan.credits} credits for $${plan.price}?`)) return;
+    const approved = await confirm({
+      title: "Confirm purchase",
+      message: `Buy ${plan.credits} credits for $${plan.price}?`,
+      confirmLabel: "Continue",
+      cancelLabel: "Cancel",
+      variant: "warning",
+    });
+    if (!approved) return;
 
     try {
       const data = await subscriptionAPI.createCheckoutSession({
@@ -53,10 +66,18 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.message || "Failed to start checkout");
+        await showAlert({
+          title: "Checkout failed",
+          message: data.message || "Failed to start checkout",
+          variant: "error",
+        });
       }
     } catch (err) {
-      alert("Failed to process credit purchase");
+      await showAlert({
+        title: "Purchase failed",
+        message: "Failed to process credit purchase",
+        variant: "error",
+      });
     }
   };
 

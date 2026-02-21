@@ -9,6 +9,7 @@ import FeaturesPage from "./pages/FeaturesPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import Dashboard from "./pages/Dashboard";
+import { useAlert } from "./components/AlertProvider";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{
@@ -22,6 +23,7 @@ const ProtectedRoute: React.FC<{
 };
 
 const App: React.FC = () => {
+  const { alert: showAlert } = useAlert();
   // Initialize state from potential existing session
   const [user, setUser] = useState<User | null>(authService.getSession());
   const [isLoading, setIsLoading] = useState(true);
@@ -57,29 +59,48 @@ const App: React.FC = () => {
   // Check for success param from Stripe redirect
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    if (query.get("session_id")) {
+    if (!query.get("session_id")) return;
+
+    const handleStripeSuccess = async () => {
       window.history.replaceState({}, "", "/");
 
       if (user) {
-        alert("Payment successful! Verifying your plan...");
+        await showAlert({
+          title: "Payment confirmed",
+          message: "Payment successful! Verifying your plan...",
+          variant: "success",
+        });
 
         setTimeout(async () => {
           try {
             const updatedUser = await authService.getCurrentUser();
             setUser(updatedUser);
-            alert("Plan upgraded successfully!");
+            await showAlert({
+              title: "All set",
+              message: "Plan upgraded successfully!",
+              variant: "success",
+            });
           } catch (e) {
             console.error("Verification failed", e);
-            alert(
-              "Payment received, but auto-refresh failed. Please refresh the page.",
-            );
+            await showAlert({
+              title: "Manual refresh needed",
+              message:
+                "Payment received, but auto-refresh failed. Please refresh the page.",
+              variant: "warning",
+            });
           }
         }, 2000);
       } else {
-        alert("Payment successful! Please sign in to see your new plan.");
+        await showAlert({
+          title: "Payment confirmed",
+          message: "Payment successful! Please sign in to see your new plan.",
+          variant: "success",
+        });
       }
-    }
-  }, [user]);
+    };
+
+    void handleStripeSuccess();
+  }, [showAlert, user]);
 
   if (isLoading) {
     return (

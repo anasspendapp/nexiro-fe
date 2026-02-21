@@ -1,11 +1,13 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { authService } from "../services/authService";
+import { useAlert } from "./AlertProvider";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = authService.getSession();
+  const { confirm } = useAlert();
   const isDashboardRoute = location.pathname.startsWith("/dashboard");
   const isDashboardRoot = location.pathname === "/dashboard";
   const showNavLinks = !isDashboardRoute;
@@ -14,7 +16,17 @@ const Header: React.FC = () => {
   const showSettings = isDashboardRoute && !!user;
   const isSticky = isDashboardRoute;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const approved = await confirm({
+      title: "Confirm logout",
+      message: "Are you sure you want to log out?",
+      confirmLabel: "Log out",
+      cancelLabel: "Cancel",
+      variant: "warning",
+    });
+
+    if (!approved) return;
+
     authService.clearSession();
     window.location.href = "/";
   };
