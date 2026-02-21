@@ -1,0 +1,44 @@
+# Robots.txt for Nexiro
+# Allow all bots to crawl public pages
+
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /pricing
+Allow: /privacy
+Allow: /terms
+Allow: /auth
+
+# Disallow admin and private areas
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap URL
+Sitemap: https://nexiro.io/sitemap.xml
+
+# Crawl delay (in seconds) to prevent server overload
+Crawl-delay: 1
+
+# Specify user agents
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Yandexbot
+Allow: /
+Crawl-delay: 1
+
+# Block harmful bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /

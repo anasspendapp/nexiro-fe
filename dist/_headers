@@ -1,0 +1,35 @@
+# Headers configuration for Nexiro
+# This file is used by Netlify and similar CDNs
+
+# Security and SEO Headers
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# Cache control headers
+/index.html
+  Cache-Control: public, must-revalidate, max-age=3600
+
+/styles/*
+  Cache-Control: public, immutable, max-age=31536000
+
+/scripts/*
+  Cache-Control: public, immutable, max-age=31536000
+
+/images/*
+  Cache-Control: public, immutable, max-age=31536000
+
+# Gzip compression
+/*
+  Content-Encoding: gzip
+
+# SEO Meta Tag Headers
+/
+  Link: </sitemap.xml>; rel="sitemap"
+
+# Mobile optimization
+/*
+  Access-Control-Allow-Origin: *
