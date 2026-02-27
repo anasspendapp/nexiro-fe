@@ -15,6 +15,7 @@ export interface User {
   email: string;
   credits: number;
   plan: PlanType;
+  referralCode?: string;
   isPro?: boolean; // Added to match backend and frontend usage
   isDriveConnected?: boolean;
 }

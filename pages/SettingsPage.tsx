@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, PlanType, Plan } from "../types";
 import { authService } from "../services/authService";
-import { pricingAPI, subscriptionAPI } from "../services/api";
+import { pricingAPI, subscriptionAPI, userAPI } from "../services/api";
 import PlanCard from "../components/PlanCard";
 import { useAlert } from "../components/AlertProvider";
 
@@ -16,10 +16,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [planLoading, setPlanLoading] = useState(true);
   const [planError, setPlanError] = useState<string | null>(null);
+  const [referralCode, setReferralCode] = useState(user.referralCode || "");
+  const [referralLoading, setReferralLoading] = useState(false);
   const [msg, setMsg] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  useEffect(() => {
+    setReferralCode(user.referralCode || "");
+  }, [user.referralCode]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -73,6 +79,90 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
     }
   };
 
+  const handleSaveReferralCode = async () => {
+    const trimmedCode = referralCode.trim();
+
+    if (!trimmedCode) {
+      await showAlert({
+        title: "Referral code required",
+        message: "Please enter a referral code before saving.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    setReferralLoading(true);
+    try {
+      const data = await userAPI.updateReferralCode(trimmedCode);
+      const updatedUser = {
+        ...user,
+        referralCode: data?.user?.referralCode || trimmedCode,
+      };
+      onUpdateUser(updatedUser);
+      authService.saveSession(updatedUser);
+      await showAlert({
+        title: "Referral code updated",
+        message: "Your referral code has been saved.",
+        variant: "success",
+      });
+    } catch (err: any) {
+      await showAlert({
+        title: "Update failed",
+        message:
+          err?.response?.data?.message ||
+          "Unable to update referral code. Please try again.",
+        variant: "error",
+      });
+    } finally {
+      setReferralLoading(false);
+    }
+  };
+
+  const getReferralLink = () => {
+    const code = (user.referralCode || referralCode || "").trim();
+    return `https://nexiro.io/auth?referralCode=${encodeURIComponent(code)}`;
+  };
+
+  const handleCopyReferralLink = async () => {
+    const code = (user.referralCode || referralCode || "").trim();
+    if (!code) {
+      await showAlert({
+        title: "No referral code",
+        message: "Set your referral code first to copy your referral link.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(getReferralLink());
+    await showAlert({
+      title: "Referral link copied",
+      message: "Your referral link is ready to share.",
+      variant: "success",
+    });
+  };
+
+  const handleCopyReferralMessage = async () => {
+    const code = (user.referralCode || referralCode || "").trim();
+    if (!code) {
+      await showAlert({
+        title: "No referral code",
+        message: "Set your referral code first to copy your message.",
+        variant: "warning",
+      });
+      return;
+    }
+
+    const link = getReferralLink();
+    const message = `🚀 I’ve been creating stunning AI visuals with Nexiro and you should try it too! Use my referral code ${code} when you sign up and start leveling up your content game: ${link}`;
+    await navigator.clipboard.writeText(message);
+    await showAlert({
+      title: "Message copied",
+      message: "Your referral message has been copied.",
+      variant: "success",
+    });
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 animate-fade-in w-full">
       <h2 className="text-3xl font-bold text-white mb-8">Settings</h2>
@@ -118,6 +208,43 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
               disabled
               className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-gray-400 cursor-not-allowed"
             />
+          </div>
+
+          <div className="mt-6">
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Referral Code
+            </label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Set your referral code"
+                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                onClick={handleSaveReferralCode}
+                disabled={referralLoading}
+                className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              >
+                {referralLoading ? "Saving..." : "Save"}
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleCopyReferralLink}
+                className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm"
+              >
+                Copy Referral Link
+              </button>
+              <button
+                onClick={handleCopyReferralMessage}
+                className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm"
+              >
+                Copy Creative Message
+              </button>
+            </div>
           </div>
         </section>
 

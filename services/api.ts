@@ -93,10 +93,11 @@ export const authAPI = {
   /**
    * Google OAuth login
    */
-  googleAuth: async (token: string, plan?: PlanType) => {
+  googleAuth: async (token: string, plan?: PlanType, referralCode?: string) => {
     const response = await apiClient.post("/users/google-auth", {
       token,
       plan,
+      referralCode,
     });
     return response.data;
   },
@@ -144,6 +145,16 @@ export const userAPI = {
    */
   getCredits: async (userId: string) => {
     const response = await apiClient.get(`/${userId}/credits`);
+    return response.data;
+  },
+
+  /**
+   * Update current user's referral code
+   */
+  updateReferralCode: async (referralCode: string) => {
+    const response = await apiClient.patch("/users/me/referral-code", {
+      referralCode,
+    });
     return response.data;
   },
 };
@@ -277,6 +288,7 @@ export const transformUserData = (backendUser: any): User => {
     email: backendUser.email,
     credits: credits,
     plan: userPlan,
+    referralCode: backendUser.referralCode,
     isDriveConnected: !!backendUser.googleDriveFolderId,
     isPro: userPlan === PlanType.PRO,
   };

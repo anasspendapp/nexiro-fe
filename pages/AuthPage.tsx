@@ -8,6 +8,15 @@ const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState(() => {
+    const query = new URLSearchParams(window.location.search);
+    const fromUrl = query.get("referralCode")?.trim() || "";
+    if (fromUrl) {
+      authService.savePendingReferralCode(fromUrl);
+      return fromUrl;
+    }
+    return authService.getPendingReferralCode();
+  });
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex items-center justify-center p-6">
@@ -44,23 +53,43 @@ const AuthPage: React.FC = () => {
         </div>
 
         <div className="mt-6 flex justify-center">
+          <div className="w-full max-w-[300px] mb-4">
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Referral Code (Optional)
+            </label>
+            <input
+              type="text"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              placeholder="Enter referral code"
+              className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="mt-2 flex justify-center">
           <GoogleLogin
             onSuccess={async (credentialResponse) => {
               if (credentialResponse.credential) {
                 setLoading(true);
                 try {
+                  const trimmedReferralCode = referralCode.trim();
                   const user = await authService.googleLogin(
                     credentialResponse.credential,
+                    undefined,
+                    trimmedReferralCode || undefined,
                   );
                   console.log("Google login successful");
                   // Use window.location to force a full page reload
                   // This ensures App.tsx reinitializes with the new user from localStorage
 
                   if (user.credits === 0) {
+                    authService.clearPendingReferralCode();
                     window.location.href = "/pricing";
 
                     return;
                   }
+                  authService.clearPendingReferralCode();
                   window.location.href = "/dashboard";
                 } catch (err: any) {
                   console.error(err);

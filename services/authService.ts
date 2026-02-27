@@ -47,6 +47,19 @@ export const authService = {
     this.clearToken();
   },
 
+  // Referral Code Capture
+  savePendingReferralCode(referralCode: string) {
+    sessionStorage.setItem("nexiro_referral_code", referralCode);
+  },
+
+  getPendingReferralCode(): string {
+    return sessionStorage.getItem("nexiro_referral_code") || "";
+  },
+
+  clearPendingReferralCode() {
+    sessionStorage.removeItem("nexiro_referral_code");
+  },
+
   /**
    * Login with email and password
    */
@@ -60,8 +73,12 @@ export const authService = {
   /**
    * Google OAuth login
    */
-  async googleLogin(token: string, plan?: PlanType): Promise<User> {
-    const data = await authAPI.googleAuth(token, plan);
+  async googleLogin(
+    token: string,
+    plan?: PlanType,
+    referralCode?: string,
+  ): Promise<User> {
+    const data = await authAPI.googleAuth(token, plan, referralCode);
     const user = transformUserData(data.user);
     this.saveSession(user, data.token);
     return user;

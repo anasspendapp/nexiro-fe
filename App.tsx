@@ -56,6 +56,18 @@ const App: React.FC = () => {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const referralCode = query.get("referralCode");
+
+    if (!referralCode) return;
+
+    const cleanedCode = referralCode.trim();
+    if (!cleanedCode) return;
+
+    authService.savePendingReferralCode(cleanedCode);
+  }, []);
+
   // Check for success param from Stripe redirect
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
