@@ -4,6 +4,7 @@ import { authService } from "../services/authService";
 import { pricingAPI, subscriptionAPI, userAPI } from "../services/api";
 import PlanCard from "../components/PlanCard";
 import { useAlert } from "../components/AlertProvider";
+import { trackEvent } from "../services/amplitudeService";
 
 interface SettingsPageProps {
   user: User;
@@ -56,6 +57,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ user, onUpdateUser }) => {
     if (!approved) return;
     setLoading(true);
     try {
+      trackEvent("credit_purchase_initiated", {
+        plan_id: plan.id,
+        plan_name: plan.name,
+        credits: plan.credits,
+        price: plan.price,
+      });
       const data = await subscriptionAPI.createCheckoutSession({
         email: user.email,
         planId: plan.id,

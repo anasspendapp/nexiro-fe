@@ -10,6 +10,8 @@
     "deploy": "yarn build && firebase deploy"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.36.1",
+    "@amplitude/plugin-session-replay-browser": "^1.25.18",
     "@react-oauth/google": "^0.12.1",
     "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.2",
