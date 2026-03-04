@@ -1,5 +1,4 @@
 import * as amplitude from "@amplitude/analytics-browser";
-import { sessionReplayPlugin } from "@amplitude/plugin-session-replay-browser";
 
 const AMPLITUDE_API_KEY = "dfeee2612ae5f0e7c631ef60c6bf599";
 
@@ -8,7 +7,6 @@ let initialized = false;
 export function initAmplitude(): void {
   if (initialized) return;
   initialized = true;
-  amplitude.add(sessionReplayPlugin({ sampleRate: 1 }));
   amplitude.init(AMPLITUDE_API_KEY, { autocapture: true });
 }
 
