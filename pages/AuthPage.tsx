@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { authService } from "../services/authService";
 import BackgroundBlobs from "../components/BackgroundBlobs";
+import { trackEvent, identifyUser } from "../services/amplitudeService";
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -80,6 +81,11 @@ const AuthPage: React.FC = () => {
                     trimmedReferralCode || undefined,
                   );
                   console.log("Google login successful");
+                  identifyUser(user.id ?? user.email, user.email);
+                  trackEvent("user_login", {
+                    method: "google",
+                    has_referral_code: !!trimmedReferralCode,
+                  });
                   // Use window.location to force a full page reload
                   // This ensures App.tsx reinitializes with the new user from localStorage
 

@@ -18,6 +18,7 @@ import {
   getEnhancementCredits,
 } from "../services/geminiService";
 import ImageUploader from "../components/ImageUploader";
+import { trackEvent } from "../services/amplitudeService";
 
 interface EnhanceToolProps {
   user: User;
@@ -119,6 +120,17 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
     setIsProcessing(true);
     onError("");
 
+    trackEvent("image_enhance_started", {
+      tool_type: toolType,
+      aspect_ratio: aspectRatio,
+      quality,
+      background_mode: backgroundMode,
+      camera_angle: cameraAngle,
+      usage_scenario: usageScenario,
+      style_type: referenceImage ? "image_reference" : "text_prompt",
+      credits_cost: cost,
+    });
+
     try {
       // 2. Prepare options
       const styleInput: StyleInput = referenceImage
@@ -151,6 +163,11 @@ const EnhanceTool: React.FC<EnhanceToolProps> = ({
         options,
       );
       setGeneratedImage(`data:image/jpeg;base64,${resultBase64}`);
+      trackEvent("image_enhance_completed", {
+        tool_type: toolType,
+        quality,
+        credits_spent: cost,
+      });
     } catch (err: any) {
       console.error(err);
       onError(err.message || "Generation failed");

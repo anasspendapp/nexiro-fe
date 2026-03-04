@@ -6,6 +6,9 @@ import { QueryProvider } from "./providers/QueryProvider";
 import MainteancePage from "./components/MaintenancePage";
 import { AlertProvider } from "./components/AlertProvider";
 import App from "./App";
+import { initAmplitude } from "./services/amplitudeService";
+
+initAmplitude();
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
