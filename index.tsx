@@ -7,6 +7,7 @@ import MainteancePage from "./components/MaintenancePage";
 import { AlertProvider } from "./components/AlertProvider";
 import App from "./App";
 import { initAmplitude } from "./services/amplitudeService";
+import "./index.css";
 
 initAmplitude();
 

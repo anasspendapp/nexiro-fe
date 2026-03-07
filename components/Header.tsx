@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { authService } from "../services/authService";
 import { useAlert } from "./AlertProvider";
+import logoImg from "@/images/logo.png";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -48,13 +49,14 @@ const Header: React.FC = () => {
   };
 
   return (
-    <nav
-      className={`relative z-20 border-b border-white/5 backdrop-blur-xl bg-black/40 ${
-        isSticky ? "sticky top-0" : ""
-      }`}
+    <header
+      className={`${user ? "relative" : "fixed top-2 md:top-4 left-0 right-0"} z-50 px-2 md:px-6 flex justify-center pointer-events-none`}
     >
-      <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <nav
+        className={`max-w-[1200px] w-full flex justify-between items-center bg-black/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.5)] rounded-2xl px-4 md:px-6 py-3 md:py-4 pointer-events-auto transition-all ${user ? "my-4" : ""}`}
+      >
+        {/* Logo Section */}
+        <div className="flex items-center gap-3 shrink-0">
           {showBack ? (
             <button
               onClick={handleBack}
@@ -77,32 +79,38 @@ const Header: React.FC = () => {
               </svg>
             </button>
           ) : null}
-          <div
-            className="text-2xl font-bold cursor-pointer"
+          <button
             onClick={handleHomeClick}
+            className="cursor-pointer flex items-center justify-start shrink-0 w-16 sm:w-20 md:w-28 h-8 md:h-10 relative overflow-visible"
           >
-            Nex<span className="text-indigo-400">iro</span>
-          </div>
+            <img
+              src={logoImg}
+              alt="Nexiro"
+              className="absolute top-1/2 left-0 -translate-x-4 md:-translate-x-8 -translate-y-1/2 w-[160px] sm:w-[200px] md:w-[180px] max-w-none hover:opacity-80 transition-opacity"
+            />
+          </button>
         </div>
 
-        <div className="flex items-center gap-6">
-          {showNavLinks && (
-            <>
-              <button
-                onClick={() => navigate("/features")}
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => navigate("/pricing")}
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-              >
-                Pricing
-              </button>
-            </>
-          )}
+        {/* Navigation Links */}
+        {showNavLinks && (
+          <nav className="hidden md:flex gap-8 text-sm font-medium text-gray-400">
+            <a
+              href="/#features"
+              className="hover:text-white transition-colors scroll-smooth"
+            >
+              Features
+            </a>
+            <a
+              href="/#pricing"
+              className="hover:text-white transition-colors scroll-smooth"
+            >
+              Pricing
+            </a>
+          </nav>
+        )}
 
+        {/* Right Section - CTA / Auth / User */}
+        <div className="flex items-center gap-3 md:gap-4 shrink-0">
           {user ? (
             <>
               <div className="text-xs text-gray-400 hidden sm:block">
@@ -151,24 +159,24 @@ const Header: React.FC = () => {
               ) : null}
             </>
           ) : showAuthButtons ? (
-            <div className="flex gap-4">
+            <>
               <button
                 onClick={() => navigate("/auth")}
-                className="text-sm font-semibold hover:text-indigo-400 transition-colors"
+                className="hidden sm:block text-xs md:text-sm font-semibold text-gray-300 hover:text-white transition-colors"
               >
-                Log In
+                Login
               </button>
               <button
-                onClick={() => navigate("/dashboard")}
-                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium transition-all"
+                onClick={() => navigate("/auth")}
+                className="px-4 border border-white/20 md:border-0 md:px-5 py-1.5 md:py-2 rounded-lg bg-white hover:bg-gray-200 text-black font-semibold text-xs md:text-sm transition-transform hover:-translate-y-0.5 shadow-md shadow-white/5"
               >
-                Get Started
+                Sign up
               </button>
-            </div>
+            </>
           ) : null}
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 
